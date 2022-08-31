@@ -17,6 +17,14 @@ app.use(cors(corsOptions));
 app.get("/api/products", (req, res) => {
   res.send(data.products);
 });
+app.get("/api/products/slug/:slug", (req, res) => {
+  const product = data.products.find((x) => x.slug === req.params.slug);
+  if (product) {
+    res.send(product);
+  } else {
+    res.send({message:'找不到該產品'})
+  }
+});
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
