@@ -1,7 +1,7 @@
 const data = {
   products: [
     {
-      id: 1,
+      _id: 1,
       category: "類別",
       name: "鮭魚清肉1KG",
       slug: "salmon",
@@ -10,22 +10,22 @@ const data = {
       img: "product1.jpg",
       countInStock: 10,
       rating: 4,
-      numReviews:0
+      numReviews: 0,
     },
     {
-      id: 2,
+      _id: 2,
       category: "類別",
       name: "干貝",
       slug: "salmon1",
       price: 300,
       description: "又大又嫩的干貝",
       img: "product2.jpg",
-      countInStock: 0,
+      countInStock: 5,
       rating: 5,
-      numReviews:0
+      numReviews: 0,
     },
     {
-      id: 3,
+      _id: 3,
       category: "類別",
       name: "帆立貝",
       slug: "salmon2",
@@ -34,10 +34,10 @@ const data = {
       img: "product3.jpg",
       countInStock: 10,
       rating: 4.5,
-      numReviews:0
+      numReviews: 0,
     },
     {
-      id: 4,
+      _id: 4,
       category: "類別",
       name: "產品名稱",
       slug: "salmon3",
@@ -46,19 +46,19 @@ const data = {
       img: "product1.jpg",
       countInStock: 10,
       rating: 4.5,
-      numReviews:0
+      numReviews: 0,
     },
     {
-      id: 5,
+      _id: 5,
       category: "類別",
       name: "干貝",
-      slug: "salmon1",
+      slug: "salmon4",
       price: 300,
       description: "產品描述",
       img: "product2.jpg",
-      countInStock: 10,
+      countInStock: 0,
       rating: 4.5,
-      numReviews:0
+      numReviews: 0,
     },
   ],
 };
