@@ -1,8 +1,23 @@
+import bcrypt from "bcryptjs";
 const data = {
+  users: [
+    {
+      name: "秉翰",
+      email: "admin@example.com",
+      password: bcrypt.hashSync("123456"),
+      isAdmin: true,
+    },
+    {
+      name: "顧客",
+      email: "user@example.com",
+      password: bcrypt.hashSync("123456"),
+      isAdmin: false,
+    },
+  ],
   products: [
     {
       // _id: 1,
-      brand:"羊牌",
+      brand: "羊牌",
       category: "類別",
       name: "鮭魚清肉1KG",
       slug: "salmon",
@@ -15,7 +30,7 @@ const data = {
     },
     {
       // _id: 2,
-      brand:"羊頭牌",
+      brand: "羊頭牌",
       category: "類別",
       name: "干貝",
       slug: "salmon1",
@@ -28,7 +43,7 @@ const data = {
     },
     {
       // _id: 3,
-      brand:"牛奶牌",
+      brand: "牛奶牌",
       category: "類別",
       name: "帆立貝",
       slug: "salmon2",
@@ -41,7 +56,7 @@ const data = {
     },
     {
       // _id: 4,
-      brand:"貓咪牌",
+      brand: "貓咪牌",
       category: "類別",
       name: "產品名稱",
       slug: "salmon3",
@@ -54,7 +69,7 @@ const data = {
     },
     {
       // _id: 5,
-      brand:"豬牌",
+      brand: "豬牌",
       category: "類別",
       name: "大干貝",
       slug: "salmon4",
