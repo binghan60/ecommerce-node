@@ -5,6 +5,7 @@ import data from "./data.js";
 import cors from "cors";
 import seedRouter from "./routes/seedRoutes.js";
 import productRouter from "./routes/productRoutes.js";
+import userRouter from "./routes/userRoutes.js";
 
 //讀取連線設定檔
 dotenv.config();
@@ -28,11 +29,17 @@ const corsOptions = {
   },
 };
 app.use(cors(corsOptions));
+//
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 app.use("/api/seed", seedRouter);
 app.use("/api/products", productRouter);
-
-
+app.use("/api/users", userRouter);
+//user router 的expressAsyncHandler有錯誤會觸發這裡
+app.use((err, req, res, next) => {
+  res.status(500).send({ message: err.message });
+});
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
