@@ -29,7 +29,8 @@ const corsOptions = {
   },
 };
 app.use(cors(corsOptions));
-//
+//req.body預設是undefined
+//必須透過解析req.body裡的urlencoded及json
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
