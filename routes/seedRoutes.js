@@ -4,7 +4,7 @@ import Product from "../models/productModel.js";
 import User from "../models/userModel.js";
 
 const seedRouter = express.Router();
-
+//拜訪http://localhost:5000/api/seed手動匯入資料
 seedRouter.get("/", async (req, res) => {
   //先初始化Product
   await Product.deleteMany({});

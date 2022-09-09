@@ -19,7 +19,7 @@ const data = {
       // _id: 1,
       brand: "羊牌",
       category: "類別",
-      name: "鮭魚清肉1KG",
+      name: "鮭魚清肉100KG",
       slug: "salmon",
       price: 1000,
       description: "好吃的鮭魚",
