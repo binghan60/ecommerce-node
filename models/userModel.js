@@ -11,6 +11,6 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
+//User即是 以上格式的資料表
 const User = mongoose.model("User", userSchema);
 export default User;

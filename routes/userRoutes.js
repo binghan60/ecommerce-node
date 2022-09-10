@@ -13,7 +13,7 @@ userRouter.post(
     const user = await User.findOne({ email: req.body.email });
     //假如有該用戶
     if (user) {
-      //解析加密過後的密碼是否一樣
+      //比較加密過後的密碼是否一樣
       if (bcrypt.compareSync(req.body.password, user.password)) {
         res.send({
           //通過驗證回傳帳號資料和token

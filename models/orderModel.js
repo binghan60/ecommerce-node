@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 
+//訂單的資料表結構
 const orderSchema = new mongoose.Schema(
   {
-    orderITems: [
+    orderItems: [
       {
         slug: { type: String, required: true },
         name: { type: String, required: true },
@@ -10,7 +11,7 @@ const orderSchema = new mongoose.Schema(
         image: { type: String, required: true },
         price: { type: Number, required: true },
         product: {
-          //Product的格式參照
+          //用orderItemsID去Product抓參照
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
           required: true,
