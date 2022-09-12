@@ -25,6 +25,18 @@ orderRouter.post(
     res.status(201).send({ message: "成功建立新訂單", order });
   })
 );
+
+orderRouter.get(
+  "/mine",
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    //isAuth解出來的用戶資料
+    const orders = await Order.find({ user: req.user._id });
+    console.log(req.user);
+    res.send(orders);
+  })
+);
+
 orderRouter.get(
   "/:id",
   isAuth,
