@@ -32,7 +32,6 @@ orderRouter.get(
   expressAsyncHandler(async (req, res) => {
     //isAuth解出來的用戶資料
     const orders = await Order.find({ user: req.user._id });
-    console.log(req.user);
     res.send(orders);
   })
 );
