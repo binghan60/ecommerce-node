@@ -42,3 +42,12 @@ export const isAuth = (req, res, next) => {
     res.status(401).send({ message: "沒有金鑰" });
   }
 };
+
+export const isAdmin = (req, res, next) => {
+  if (req.user && req.user.isAdmin) {
+    //是用戶同時是管理者
+    next();
+  } else {
+    res.status(401).send({message: "該帳號不是管理者"})
+  }
+};
