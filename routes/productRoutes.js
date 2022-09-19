@@ -26,7 +26,7 @@ productRouter.get(
     const queryFilter =
       searchQuery && searchQuery !== "all"
         ? {
-          //regex  "i" 不區分大小寫
+          //regex  option"i" 搜尋不區分大小寫
             name: {
               $regex: searchQuery,
               $options: "i",
@@ -55,6 +55,7 @@ productRouter.get(
           }
         : {};
     const sortOrder =
+    //1是升冪 -1是降冪
       order === "featured"
         ? { featured: -1 }
         : order === "lowest"
@@ -74,10 +75,10 @@ productRouter.get(
       ...ratingFilter,
     })
       .sort(sortOrder)
-      .skip(pageSize * (page - 1))
+      .skip(pageSize * (page - 1)) //如果目前第3頁 跳過6*(3-1)=12  從第13筆開始顯示
       .limit(pageSize);
 
-    const countProducts = await Product.countDocuments({
+    const countProducts = await Product.countDocuments({ //取得篩選條件下的筆數 做頁碼
       ...queryFilter,
       ...categoryFilter,
       ...priceFilter,
