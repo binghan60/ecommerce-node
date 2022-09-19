@@ -1,7 +1,9 @@
 import express from "express";
 import expressAsyncHandler from "express-async-handler";
 import Order from "../models/orderModel.js";
-import { isAuth } from "../utils.js";
+import User from "../models/userModel.js";
+import Product from "../models/productModel.js";
+import { isAuth, isAdmin } from "../utils.js";
 
 const orderRouter = express.Router();
 
@@ -27,10 +29,54 @@ orderRouter.post(
 );
 
 orderRouter.get(
+  "/summary",
+  isAuth,
+  isAdmin,
+  expressAsyncHandler(async (req, res) => {
+    const orders = await Order.aggregate([
+      {
+        $group: {
+          _id: null, //表示全部訂單
+          numOrders: { $sum: 1 }, //訂單筆數
+          totalSales: { $sum: "$totalPrice" }, //totalPrice加總
+        },
+      },
+    ]);
+    const users = await User.aggregate([
+      {
+        $group: {
+          _id: null, //表示全部
+          numUsers: { $sum: 1 }, //用戶筆數
+        },
+      },
+    ]);
+    const dailyOrders = await Order.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, //以建立日期為條件一組
+          orders: { $sum: 1 }, //一天的訂單數
+          sales: { $sum: "$totalPrice" }, //一天的金額
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+    const productCategories = await Product.aggregate([
+      {
+        $group: {
+          _id: "$category",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+    res.send({ orders, users, dailyOrders, productCategories });
+  })
+);
+
+orderRouter.get(
   "/mine",
   isAuth,
   expressAsyncHandler(async (req, res) => {
-    //isAuth解出來的用戶資料
+    //req.user._id isAuth解出來的用戶資料
     const orders = await Order.find({ user: req.user._id });
     res.send(orders);
   })
