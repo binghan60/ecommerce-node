@@ -1,6 +1,7 @@
 import express from "express";
 import expressAsyncHandler from "express-async-handler";
 import Product from "../models/productModel.js";
+import { isAdmin, isAuth } from "../utils.js";
 
 const productRouter = express.Router();
 
@@ -9,6 +10,28 @@ productRouter.get("/", async (req, res) => {
   res.send(products);
 });
 const PAGE_SIZE = 6;
+const ADMINPAGE_SIZE = 15;
+productRouter.get(
+  "/admin",
+  isAuth,
+  isAdmin,
+  expressAsyncHandler(async (req, res) => {
+    const { query } = req;
+    const page = query.page || 1;
+    const pageSize = query.pageSize || ADMINPAGE_SIZE;
+    const products = await Product.find()
+      .skip(pageSize * (page - 1)) ////如果目前第3頁 跳過6*(3-1)=12  從第13筆開始顯示6筆
+      .limit(pageSize);
+    const countProducts = await Product.countDocuments();
+    res.send({
+      products,
+      countProducts, //商品數量
+      page, //現在第幾頁
+      pages: Math.ceil(countProducts / pageSize), //總共有幾頁
+    });
+  })
+);
+
 productRouter.get(
   "/search",
   expressAsyncHandler(async (req, res) => {
@@ -26,7 +49,7 @@ productRouter.get(
     const queryFilter =
       searchQuery && searchQuery !== "all"
         ? {
-          //regex  option"i" 搜尋不區分大小寫
+            //regex  option"i" 搜尋不區分大小寫
             name: {
               $regex: searchQuery,
               $options: "i",
@@ -55,7 +78,7 @@ productRouter.get(
           }
         : {};
     const sortOrder =
-    //1是升冪 -1是降冪
+      //1是升冪 -1是降冪
       order === "featured"
         ? { featured: -1 }
         : order === "lowest"
@@ -78,7 +101,8 @@ productRouter.get(
       .skip(pageSize * (page - 1)) //如果目前第3頁 跳過6*(3-1)=12  從第13筆開始顯示
       .limit(pageSize);
 
-    const countProducts = await Product.countDocuments({ //取得篩選條件下的筆數 做頁碼
+    const countProducts = await Product.countDocuments({
+      //取得篩選條件下的筆數 做頁碼
       ...queryFilter,
       ...categoryFilter,
       ...priceFilter,
