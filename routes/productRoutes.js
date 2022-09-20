@@ -9,6 +9,53 @@ productRouter.get("/", async (req, res) => {
   const products = await Product.find();
   res.send(products);
 });
+productRouter.post(
+  "/",
+  isAuth,
+  isAdmin,
+  expressAsyncHandler(async (req, res) => {
+    const newProduct = new Product({
+      name: "smaple name " + Date.now(),
+      slug: "sample-name-" + Date.now(),
+      image: "product1.jpg",
+      price: 0,
+      category: "sample category",
+      brand: "sample brand",
+      countInStock: 0,
+      rating: 0,
+      numReviews: 0,
+      description: "sample description",
+    });
+    const product = await newProduct.save();
+    res.send({ message: "Producr Created", product });
+  })
+);
+
+productRouter.put(
+  "/:id",
+  isAuth,
+  isAdmin,
+  expressAsyncHandler(async (req, res) => {
+    const productId = req.params.id; //網址的:id
+    const product = await Product.findById(productId);
+    if (product) {
+      //找到該商品  傳進來的值等於商品的值 再save保存
+      product.name = req.body.name;
+      product.slug = req.body.slug;
+      product.price = req.body.price;
+      product.image = req.body.image;
+      product.category = req.body.category;
+      product.brand = req.body.brand;
+      product.countInStock = req.body.countInStock;
+      product.description = req.body.description;
+      await product.save();
+      res.send({message:"修改成功"})
+    } else {
+      res.send({message:"找不到該商品"})
+    }
+  })
+);
+
 const PAGE_SIZE = 6;
 const ADMINPAGE_SIZE = 15;
 productRouter.get(
