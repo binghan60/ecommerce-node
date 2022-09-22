@@ -49,9 +49,24 @@ productRouter.put(
       product.countInStock = req.body.countInStock;
       product.description = req.body.description;
       await product.save();
-      res.send({message:"修改成功"})
+      res.send({ message: "修改成功" });
     } else {
-      res.send({message:"找不到該商品"})
+      res.send({ message: "找不到該商品" });
+    }
+  })
+);
+productRouter.delete(
+  "/:id",
+  isAuth,
+  isAdmin,
+  expressAsyncHandler(async (req, res) => {
+    const product = await Product.findById(req.params.id);
+    //req.params  {id : 6329f118e5c83738ef36b984}
+    if (product) {
+      const deleteProduct = await product.remove();
+      res.send({ message: "刪除成功" });
+    } else {
+      res.status(404).send({ message: "找不到商品" });
     }
   })
 );
