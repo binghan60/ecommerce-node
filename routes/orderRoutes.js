@@ -105,6 +105,25 @@ orderRouter.get(
     }
   })
 );
+
+orderRouter.put(
+  "/:id/deliver",
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+
+    const order = await Order.findById(req.params.id);
+    console.log(order)
+    if (order) {
+      order.isDelivered = true;
+      order.deliveredAt = Date.now();
+      await order.save();
+      res.send({ message: "配送成功" });
+    } else {
+      res.status(404).send({ message: "找不到訂單" });
+    }
+  })
+);
+
 //更新付款狀態
 //用params ID去抓訂單 並修改其中幾項
 orderRouter.put(
