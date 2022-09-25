@@ -110,9 +110,8 @@ orderRouter.put(
   "/:id/deliver",
   isAuth,
   expressAsyncHandler(async (req, res) => {
-
     const order = await Order.findById(req.params.id);
-    console.log(order)
+    console.log(order);
     if (order) {
       order.isDelivered = true;
       order.deliveredAt = Date.now();
@@ -144,6 +143,21 @@ orderRouter.put(
       res.send({ message: "訂單已付款", order: updatedOrder });
     } else {
       res.status(404).send({ message: "找不到該訂單" });
+    }
+  })
+);
+
+orderRouter.delete(
+  "/:id",
+  isAuth,
+  isAdmin,
+  expressAsyncHandler(async (req, res) => {
+    const order = await Order.findById(req.params.id);
+    if (order) {
+      await order.remove();
+      res.send({ message: "刪除成功" });
+    } else {
+      res.status(404).send({ message: "找不到訂單" });
     }
   })
 );
