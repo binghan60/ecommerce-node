@@ -12,9 +12,10 @@ uploadRouter.post(
   "/",
   isAuth,
   isAdmin,
-  upload.single("file"),
+  upload.single("file"), //上傳單檔 Formdata裡的file
   async (req, res) => {
     cloudinary.config({
+      //連線cloudinary
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET,
@@ -28,11 +29,12 @@ uploadRouter.post(
             reject(error);
           }
         });
-        streamifier.createReadStream(req.file.buffer).pipe(stream);
+        streamifier.createReadStream(req.file.buffer).pipe(stream);//傳進來檔案的buffer轉成ReadableStream 複製到stream
       });
     };
     const result = await streamUpload(req);
-    res.send(result)
+    console.log("result", result);
+    res.send(result);//上傳圖片詳細資料 網址在secure_url
   }
 );
 

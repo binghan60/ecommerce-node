@@ -7,17 +7,23 @@ import { isAuth, isAdmin } from "../utils.js";
 
 const orderRouter = express.Router();
 
+//取得所有人的訂單
 orderRouter.get(
   "/",
   isAuth,
   isAdmin,
   expressAsyncHandler(async (req, res) => {
-    const orders = await Order.find().populate("user", "name"); //orderModel裡的user ref 關連到user的name 第二參數沒寫會整個user全部資訊都關聯
+    const orders = await Order.find().populate("user", "name").sort({
+      //order裡本來沒有name
+      createdAt: -1,
+    }); //orderModel裡的user ref 關連到user的name 掛在user裡 第二參數(name)沒寫會整個user全部資訊都關聯
+    console.log(orders);
     res.send(orders);
   })
 );
 
 orderRouter.post(
+  //結帳
   "/",
   isAuth,
   expressAsyncHandler(async (req, res) => {
@@ -32,12 +38,11 @@ orderRouter.post(
       //通過isAuth後解密出帳號資料包括_id
       user: req.user._id,
     });
-
     const order = await newOrder.save();
     res.status(201).send({ message: "成功建立新訂單", order });
   })
 );
-
+//管理面板dashboard
 orderRouter.get(
   "/summary",
   isAuth,
@@ -46,9 +51,9 @@ orderRouter.get(
     const orders = await Order.aggregate([
       {
         $group: {
-          _id: null, //表示全部訂單
-          numOrders: { $sum: 1 }, //訂單筆數
-          totalSales: { $sum: "$totalPrice" }, //totalPrice加總
+          _id: null, //表示全部訂單為一組
+          numOrders: { $sum: 1 }, //Order裡的筆數*1
+          totalSales: { $sum: "$totalPrice" }, //Order裡的訂單totalPrice加總
         },
       },
     ]);
@@ -56,25 +61,25 @@ orderRouter.get(
       {
         $group: {
           _id: null, //表示全部
-          numUsers: { $sum: 1 }, //用戶筆數
+          numUsers: { $sum: 1 }, //用戶筆數*1
         },
       },
     ]);
     const dailyOrders = await Order.aggregate([
       {
         $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, //以建立日期為條件一組
-          orders: { $sum: 1 }, //一天的訂單數
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, //以建立日期為條件一組  //format沒有也OK
+          orders: { $sum: 1 }, //一天的訂單數*1
           sales: { $sum: "$totalPrice" }, //一天的金額
         },
       },
-      { $sort: { _id: 1 } },
+      { $sort: { _id: 1 } },//ID升冪排序
     ]);
-    const productCategories = await Product.aggregate([
+    const productCategories = await Product.aggregate([ //Porduct的商品種類
       {
         $group: {
-          _id: "$category",
-          count: { $sum: 1 },
+          _id: "$category",//以種類分組
+          count: { $sum: 1 },//筆數*1
         },
       },
     ]);
@@ -82,21 +87,22 @@ orderRouter.get(
   })
 );
 
-orderRouter.get(
+orderRouter.get(//個人訂單查詢
   "/mine",
   isAuth,
   expressAsyncHandler(async (req, res) => {
     //req.user._id isAuth解出來的用戶資料
-    const orders = await Order.find({ user: req.user._id });
+    const orders = await Order.find({ user: req.user._id }).sort({//isAuth解析出來的用戶ID 為條件 去Order裡找
+      createdAt: -1, //訂單時間降冪排序
+    });
     res.send(orders);
   })
 );
 
-orderRouter.get(
+orderRouter.get(//訂單詳細頁 用網址訂單ID去資料庫找
   "/:id",
   isAuth,
   expressAsyncHandler(async (req, res) => {
-    //mongoose 的 findById
     const order = await Order.findById(req.params.id);
     if (order) {
       res.send(order);
@@ -106,7 +112,7 @@ orderRouter.get(
   })
 );
 
-orderRouter.put(
+orderRouter.put(//put取代 模擬送達 付過款 或 管理者 可以操作
   "/:id/deliver",
   isAuth,
   expressAsyncHandler(async (req, res) => {
@@ -123,7 +129,7 @@ orderRouter.put(
   })
 );
 
-//更新付款狀態
+//更新付款狀態  paypalButton
 //用params ID去抓訂單 並修改其中幾項
 orderRouter.put(
   "/:id/pay",
@@ -147,7 +153,7 @@ orderRouter.put(
   })
 );
 
-orderRouter.delete(
+orderRouter.delete(//刪除訂單
   "/:id",
   isAuth,
   isAdmin,

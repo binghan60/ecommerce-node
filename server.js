@@ -12,7 +12,7 @@ import uploadRouter from "./routes/uploadRoutes.js";
 //讀取連線設定檔
 dotenv.config();
 
-mongoose
+mongoose//連線至資料庫
   .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("資料庫連線成功");
@@ -24,7 +24,7 @@ mongoose
 const app = express();
 // Top-level middlewares
 const corsOptions = {
-  // 全部允許
+  // CORS全部允許
   credentials: true,
   origin: (origin, cb) => {
     cb(null, true);
@@ -36,16 +36,17 @@ app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-app.use("/api/keys/paypal", (req, res) => {
+app.use("/api/keys/paypal", (req, res) => {//前端來拿PAYAPL CLIENT ID
   res.send(process.env.PAYPAL_CLIENT_ID || "sb");
 });
-
-app.use("/api/seed", seedRouter);
+//設定Router
+app.use("/api/seed", seedRouter);//data匯入資料
 app.use("/api/products", productRouter);
 app.use("/api/users", userRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/upload", uploadRouter);
-//user router 的expressAsyncHandler有錯誤會觸發這裡
+
+//expressAsyncHandler有錯誤 會將客製化錯誤訊息設定至這裡
 app.use((err, req, res, next) => {
   res.status(500).send({ message: err.message });
 });

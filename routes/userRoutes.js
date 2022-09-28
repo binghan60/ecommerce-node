@@ -11,7 +11,7 @@ userRouter.get(
   isAuth,
   isAdmin,
   expressAsyncHandler(async (req, res) => {
-    const users = await User.find();
+    const users = await User.find(); //列出所有用戶 Adminuser列表用
     res.send(users);
   })
 );
@@ -21,7 +21,7 @@ userRouter.get(
   isAuth,
   isAdmin,
   expressAsyncHandler(async (req, res) => {
-    const user = await User.findById(req.params.id); //用param的ID去資料庫找用戶
+    const user = await User.findById(req.params.id); //用網址的ID去資料庫找該用戶  管理者顯示用戶資料用
     if (user) {
       res.send(user); //如果有就回傳
     } else {
@@ -29,18 +29,16 @@ userRouter.get(
     }
   })
 );
-
+//會員登入
 userRouter.post(
   "/signin",
   expressAsyncHandler(async (req, res) => {
-    //從User找尋該筆email的帳號資料
-    const user = await User.findOne({ email: req.body.email });
-    //確認有該用戶
+    const user = await User.findOne({ email: req.body.email }); //用email去User裡找該筆帳號資料
     if (user) {
-      //比較加密過後的密碼是否一樣
+      //比對 傳進來的密碼 跟 資料庫密碼是否相同
       if (bcrypt.compareSync(req.body.password, user.password)) {
         res.send({
-          //通過驗證回傳帳號資料和token
+          //通過驗證回傳帳號資料和產出token  經過isAuth會用到
           _id: user._id,
           name: user.name,
           email: user.email,
@@ -52,16 +50,17 @@ userRouter.post(
     res.status(401).send({ message: "帳號或密碼錯誤" });
   })
 );
-
+//會員註冊
 userRouter.post(
   "/signup",
   expressAsyncHandler(async (req, res) => {
     const newUser = new User({
+      //以req.body的資料new一個User
       name: req.body.name,
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password),
     });
-    const user = await newUser.save();
+    const user = await newUser.save(); //保存至資料庫
     res.send({
       //通過驗證回傳帳號資料和token
       _id: user._id,
@@ -72,14 +71,15 @@ userRouter.post(
     });
   })
 );
-
+//修改資料
 userRouter.put(
+  //put取代
   "/profile",
   isAuth,
   expressAsyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id); //依靠isAuth解析會員id
     if (user) {
-      user.name = req.body.name || user.name;
+      user.name = req.body.name || user.name; //如果有修改以修改為主 否則維持原狀
       user.email = req.body.email || user.email;
       if (req.body.password) {
         user.password = bcrypt.hashSync(req.body.password, 8);
@@ -98,19 +98,19 @@ userRouter.put(
     }
   })
 );
+
 userRouter.put(
   "/:id",
   isAuth,
   isAdmin,
   expressAsyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id);
-
-    if (req.user._id === user._id.toString()) {
+    //用網址的ID去資料庫找該用戶 管理者修改用戶資料用
+    if (req.user._id === user._id.toString()) {// id本來是object // 如果是修改管理者本人 
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       user.isAdmin = req.body.isAdmin;
       const updatedUser = await user.save();
-      console.log(updatedUser);
       res.send({
         message: "修改成功",
         user: {
@@ -118,12 +118,12 @@ userRouter.put(
           name: updatedUser.name,
           email: updatedUser.email,
           isAdmin: updatedUser.isAdmin,
-          token: generateToken(updatedUser),
+          token: generateToken(updatedUser),//重發新的token
         },
       });
       return;
     }
-    if (user) {
+    if (user) {//如果是其他用戶 直接做修改
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       user.isAdmin = req.body.isAdmin;
@@ -134,7 +134,7 @@ userRouter.put(
     }
   })
 );
-
+//刪除用戶
 userRouter.delete(
   "/:id",
   isAuth,
@@ -147,9 +147,9 @@ userRouter.delete(
     }
     if (user) {
       await user.remove();
-      res.send({message:"刪除成功"})
+      res.send({ message: "刪除成功" });
     } else {
-      res.status(404).send({message:"找不到用戶"})
+      res.status(404).send({ message: "找不到用戶" });
     }
   })
 );

@@ -10,6 +10,7 @@ productRouter.get("/", async (req, res) => {
   res.send(products);
 });
 productRouter.post(
+  //新增一筆訂單樣板
   "/",
   isAuth,
   isAdmin,
@@ -32,6 +33,7 @@ productRouter.post(
 );
 
 productRouter.put(
+  //修改商品資料
   "/:id",
   isAuth,
   isAdmin,
@@ -56,6 +58,7 @@ productRouter.put(
   })
 );
 productRouter.delete(
+  //刪除商品
   "/:id",
   isAuth,
   isAdmin,
@@ -71,9 +74,11 @@ productRouter.delete(
   })
 );
 
-const PAGE_SIZE = 6;
-const ADMINPAGE_SIZE = 15;
+const PAGE_SIZE = 8; //購物商城每頁幾項
+const ADMINPAGE_SIZE = 15; //管理者列表表格列數
+
 productRouter.get(
+  //管理者 商品列表
   "/admin",
   isAuth,
   isAdmin,
@@ -82,21 +87,24 @@ productRouter.get(
     const page = query.page || 1;
     const pageSize = query.pageSize || ADMINPAGE_SIZE;
     const products = await Product.find()
-      .skip(pageSize * (page - 1)) ////如果目前第3頁 跳過6*(3-1)=12  從第13筆開始顯示6筆
+      .sort({ createdAt: -1 })
+      .skip(pageSize * (page - 1)) //如果目前第3頁 跳過15*(3-1)=30  從第31筆開始顯示15筆
       .limit(pageSize);
     const countProducts = await Product.countDocuments();
     res.send({
       products,
       countProducts, //商品數量
       page, //現在第幾頁
-      pages: Math.ceil(countProducts / pageSize), //總共有幾頁
+      pages: Math.ceil(countProducts / pageSize), //總共有幾頁 製作頁碼用
     });
   })
 );
 
 productRouter.get(
+  //商品篩選功能
   "/search",
   expressAsyncHandler(async (req, res) => {
+    //預設顯示所有 若有params以params為主
     const { query } = req;
     const pageSize = query.pageSize || PAGE_SIZE;
     const page = query.page || 1;
@@ -104,11 +112,9 @@ productRouter.get(
     const price = query.price || "";
     const rating = query.rating || "";
     const order = query.order || "";
-    //搜尋欄位的值
-    const searchQuery = query.query || "";
+    const searchQuery = query.query || ""; //搜尋欄位的值
 
-    //有篩選條件且非all
-    const queryFilter =
+    const queryFilter = //搜尋框
       searchQuery && searchQuery !== "all"
         ? {
             //regex  option"i" 搜尋不區分大小寫
@@ -141,7 +147,7 @@ productRouter.get(
         : {};
     const sortOrder =
       //1是升冪 -1是降冪
-      order === "featured"
+      order === "featured" //下拉式選單排序
         ? { featured: -1 }
         : order === "lowest"
         ? { price: 1 }
@@ -179,14 +185,14 @@ productRouter.get(
   })
 );
 
-productRouter.get(
+productRouter.get(//取得品牌列表
   "/brands",
   expressAsyncHandler(async (req, res) => {
     const brands = await Product.find().distinct("brand");
     res.send(brands);
   })
 );
-productRouter.get(
+productRouter.get(//取得種類列表
   "/categories",
   expressAsyncHandler(async (req, res) => {
     const categories = await Product.find().distinct("category");
