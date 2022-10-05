@@ -74,6 +74,39 @@ productRouter.delete(
   })
 );
 
+productRouter.post(//評論功能
+  "/:id/reviews",
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    const productId = req.params.id;
+    const product = await Product.findById(productId);//找到對應商品
+    if (product) {
+      if (product.reviews.find((x) => x.name === req.user.name)) {//評論中的name 等於評論者的name
+        return res.status(400).send({ message: "已評論過了" });
+      }
+      const review = {//review評論object
+        name: req.user.name,
+        rating: Number(req.body.rating),
+        comment: req.body.comment,
+      };
+      product.reviews.push(review);//從最後新增進product.reviews
+      product.numReviews = product.reviews.length;//更新評論人數等於評論個數
+      product.rating =
+        product.reviews.reduce((a, c) => c.rating + a, 0) /
+        product.reviews.length;
+      const updatedProduct = await product.save();
+      res.status(201).send({
+        message: "評論成功",
+        review: updatedProduct.reviews[updatedProduct.reviews.length - 1],
+        numReviews: product.numReviews,
+        rating: product.numReviews,
+      });
+    } else {
+      res.status(404).send({ message: "找不到商品" });
+    }
+  })
+);
+
 const PAGE_SIZE = 8; //購物商城每頁幾項
 const ADMINPAGE_SIZE = 15; //管理者列表表格列數
 
@@ -166,7 +199,7 @@ productRouter.get(
       ...ratingFilter,
     })
       .sort(sortOrder)
-      .skip(pageSize * (page - 1)) //如果目前第3頁 跳過6*(3-1)=12  從第13筆開始顯示
+      .skip(pageSize * (page - 1)) //如果目前第3頁 跳過8*(3-1)=16  從第17筆開始顯示
       .limit(pageSize);
 
     const countProducts = await Product.countDocuments({
@@ -185,14 +218,16 @@ productRouter.get(
   })
 );
 
-productRouter.get(//取得品牌列表
+productRouter.get(
+  //取得品牌列表
   "/brands",
   expressAsyncHandler(async (req, res) => {
     const brands = await Product.find().distinct("brand");
     res.send(brands);
   })
 );
-productRouter.get(//取得種類列表
+productRouter.get(
+  //取得種類列表
   "/categories",
   expressAsyncHandler(async (req, res) => {
     const categories = await Product.find().distinct("category");
@@ -209,6 +244,7 @@ productRouter.get("/slug/:slug", async (req, res) => {
     res.send({ message: "找不到該產品" });
   }
 });
+
 //加對應ID的產品進購物車
 productRouter.get("/:id", async (req, res) => {
   const product = await Product.findById(req.params.id);
