@@ -7,17 +7,17 @@ import { isAuth, isAdmin } from "../utils.js";
 
 const orderRouter = express.Router();
 
-//取得所有人的訂單
+//管理後臺取得所有人的訂單
 orderRouter.get(
   "/",
   isAuth,
   isAdmin,
   expressAsyncHandler(async (req, res) => {
     const orders = await Order.find().populate("user", "name").sort({
-      //order裡本來沒有name
+      //"name email"可放入不只一個參數
+      //order裡本來只有userId
       createdAt: -1,
     }); //orderModel裡的user ref 關連到user的name 掛在user裡 第二參數(name)沒寫會整個user全部資訊都關聯
-    console.log(orders);
     res.send(orders);
   })
 );
@@ -48,20 +48,20 @@ orderRouter.get(
   isAuth,
   isAdmin,
   expressAsyncHandler(async (req, res) => {
+    const users = await User.aggregate([
+      {
+        $group: {
+          _id: null, //表示全部
+          numUsers: { $sum: 1 }, //用戶筆數*1
+        },
+      },
+    ]);
     const orders = await Order.aggregate([
       {
         $group: {
           _id: null, //表示全部訂單為一組
           numOrders: { $sum: 1 }, //Order裡的筆數*1
           totalSales: { $sum: "$totalPrice" }, //Order裡的訂單totalPrice加總
-        },
-      },
-    ]);
-    const users = await User.aggregate([
-      {
-        $group: {
-          _id: null, //表示全部
-          numUsers: { $sum: 1 }, //用戶筆數*1
         },
       },
     ]);
@@ -73,13 +73,14 @@ orderRouter.get(
           sales: { $sum: "$totalPrice" }, //一天的金額
         },
       },
-      { $sort: { _id: 1 } },//ID升冪排序
+      { $sort: { _id: 1 } }, //ID升冪排序
     ]);
-    const productCategories = await Product.aggregate([ //Porduct的商品種類
+    const productCategories = await Product.aggregate([
+      //Porduct的商品種類
       {
         $group: {
-          _id: "$category",//以種類分組
-          count: { $sum: 1 },//筆數*1
+          _id: "$category", //以種類分組
+          count: { $sum: 1 }, //筆數*1
         },
       },
     ]);
@@ -87,19 +88,22 @@ orderRouter.get(
   })
 );
 
-orderRouter.get(//個人訂單查詢
+orderRouter.get(
+  //個人訂單查詢
   "/mine",
   isAuth,
   expressAsyncHandler(async (req, res) => {
     //req.user._id isAuth解出來的用戶資料
-    const orders = await Order.find({ user: req.user._id }).sort({//isAuth解析出來的用戶ID 為條件 去Order裡找
+    const orders = await Order.find({ user: req.user._id }).sort({
+      //isAuth解析出來的用戶ID 為條件 去Order裡找
       createdAt: -1, //訂單時間降冪排序
     });
     res.send(orders);
   })
 );
 
-orderRouter.get(//訂單詳細頁 用網址訂單ID去資料庫找
+orderRouter.get(
+  //訂單詳細頁 用網址訂單ID去資料庫找
   "/:id",
   isAuth,
   expressAsyncHandler(async (req, res) => {
@@ -112,12 +116,12 @@ orderRouter.get(//訂單詳細頁 用網址訂單ID去資料庫找
   })
 );
 
-orderRouter.put(//put取代 模擬送達 付過款 或 管理者 可以操作
+orderRouter.put(
+  //put取代 模擬送達 付過款 或 管理者 可以操作
   "/:id/deliver",
   isAuth,
   expressAsyncHandler(async (req, res) => {
     const order = await Order.findById(req.params.id);
-    console.log(order);
     if (order) {
       order.isDelivered = true;
       order.deliveredAt = Date.now();
@@ -153,7 +157,8 @@ orderRouter.put(
   })
 );
 
-orderRouter.delete(//刪除訂單
+orderRouter.delete(
+  //刪除訂單
   "/:id",
   isAuth,
   isAdmin,
