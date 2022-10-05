@@ -33,7 +33,6 @@ uploadRouter.post(
       });
     };
     const result = await streamUpload(req);
-    console.log("result", result);
     res.send(result);//上傳圖片詳細資料 網址在secure_url
   }
 );
