@@ -1,5 +1,16 @@
 import mongoose from "mongoose";
 
+const reviewSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    comment: { type: String, required: true },
+    rating: { type: Number, required: true },
+  },
+  {
+    timestamps: true,//建立、修改日期...
+  }
+);
+
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, unique: true },
@@ -12,6 +23,7 @@ const productSchema = new mongoose.Schema(
     countInStock: { type: Number, required: true },
     rating: { type: Number, required: true },
     numReviews: { type: Number, required: true },
+    reviews: [reviewSchema],
   },
   {
     timestamps: true,
@@ -19,4 +31,4 @@ const productSchema = new mongoose.Schema(
 );
 
 const Product = mongoose.model("Product", productSchema);
-export default Product
+export default Product;
