@@ -31,9 +31,12 @@ const corsOptions = {
   },
 };
 app.use(cors(corsOptions));
-//req.body預設是undefined
+//req.body預設是undefined(拆解成封包再組裝回原本)
 //必須透過解析req.body裡的urlencoded及json
+//post 跟 put 有傳資料近來才需要
+// 將傳入的request識別為string或array
 app.use(express.urlencoded({ extended: false }));
+// 將傳入的 Request Object 識別為JSON Object
 app.use(express.json());
 
 app.use("/api/keys/paypal", (req, res) => {//前端來拿PAYAPL CLIENT ID
@@ -55,3 +58,9 @@ const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`server start at http://localhost:${port}`);
 });
+
+// GET: 請求資源
+// POST: 新增資源
+// PUT: 取代資源
+// PATCH: 更新資源
+// DELETE: 刪除資源

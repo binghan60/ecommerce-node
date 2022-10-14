@@ -77,6 +77,8 @@ userRouter.put(
   "/profile",
   isAuth,
   expressAsyncHandler(async (req, res) => {
+    //req.body
+    // { name: '牛奶', email: 'admin@example.com', password: '123456' }
     const user = await User.findById(req.user._id); //依靠isAuth解析會員id
     if (user) {
       user.name = req.body.name || user.name; //如果有修改以修改為主 否則維持原狀
@@ -106,7 +108,8 @@ userRouter.put(
   expressAsyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id);
     //用網址的ID去資料庫找該用戶 管理者修改用戶資料用
-    if (req.user._id === user._id.toString()) {// id本來是object // 如果是修改管理者本人 
+    if (req.user._id === user._id.toString()) {
+      // id本來是object // 如果是修改管理者本人
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       user.isAdmin = req.body.isAdmin;
@@ -118,12 +121,13 @@ userRouter.put(
           name: updatedUser.name,
           email: updatedUser.email,
           isAdmin: updatedUser.isAdmin,
-          token: generateToken(updatedUser),//重發新的token
+          token: generateToken(updatedUser), //重發新的token
         },
       });
       return;
     }
-    if (user) {//如果是其他用戶 直接做修改
+    if (user) {
+      //如果是其他用戶 直接做修改
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       user.isAdmin = req.body.isAdmin;
